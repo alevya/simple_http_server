@@ -18,7 +18,7 @@
 #include <ev.h>
 
 // Debug mode, a lot of debug print to std::cout
-// #define HTTP_DEBUG
+#define HTTP_DEBUG
 #define BUF_SIZE 256
 
 // send fd
@@ -43,7 +43,7 @@ std::list<int> ready_read_sockets;
 sem_t* locker;
 
 // Arguments
-char *host = 0, *port = 0, *dir = 0;
+char *host = "127.0.0.1", *port = "1234", *dir = "/home/alevya/";
 
 int safe_pop_front()
 {
@@ -161,6 +161,10 @@ void process_slave_socket(int slave_socket)
     std::cout << "============ full path ===========" << std::endl;
     std::cout << full_path << std::endl;
     std::cout << "==================================" << std::endl; 
+    
+    std::cout << "============ path ===========" << std::endl;
+    std::cout << path << std::endl;
+    std::cout << "==================================" << std::endl; 
 #endif
 
     char reply[1024];
@@ -168,7 +172,13 @@ void process_slave_socket(int slave_socket)
     {
         // file exists, get its size
         int fd = open(full_path.c_str(), O_RDONLY);
-        if(fd != -1)
+        
+#ifdef HTTP_DEBUG
+    std::cout << "============ file id ===========" << std::endl;
+    std::cout << fd << std::endl;
+    std::cout << "==================================" << std::endl; 
+#endif
+        if(fd != -1 && path != "/")
         {
              //int fd = open(full_path.c_str(), O_RDONLY);
             int sz = lseek(fd, 0, SEEK_END);;
@@ -203,7 +213,7 @@ void process_slave_socket(int slave_socket)
             offset = sendfile(slave_socket, fd, &offset, sz - offset);
         }
     */
-        if(!path.empty())
+        if(!path.empty() && path != "/")
         {
             FILE *filehandle = fopen(full_path.c_str(), "rb");
             if (filehandle != NULL)
