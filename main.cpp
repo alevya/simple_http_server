@@ -30,7 +30,7 @@ ssize_t sock_fd_read(int sock, void *buf, ssize_t bufsize, int *fd);
 int set_nonblock(int fd);
 
 //send file via socket
-bool send_file(SOCKET sock, FILE *f);
+void send_file(int sock, FILE *f);
 
 // Workers storage: socket and status (is it free (true) or not (false))
 std::map<int, bool> workers;
@@ -192,7 +192,7 @@ void process_slave_socket(int slave_socket)
         FILE *filehandle = fopen(full_path.c_str(), "rb");
         if (filehandle != NULL)
         {
-            sendfile(slave_socket, filehandle);
+            send_file(slave_socket, filehandle);
             fclose(filehandle);
         }
         //close(fd);
@@ -607,29 +607,33 @@ int set_nonblock(int fd)
 #endif
 }
 
-bool send_file(SOCKET sock, FILE *f)
+void send_file(int sock, FILE *fp)
 {
-    fseek(f, 0, SEEK_END);
-    long filesize = ftell(f);
-    rewind(f);
-    if (filesize == EOF)
-        return false;
-    if (!sendlong(sock, filesize))
-        return false;
-    if (filesize > 0)
-    {
-        char buffer[1024];
-        do
+    for (;;)
         {
-            size_t num = min(filesize, sizeof(buffer));
-            num = fread(buffer, 1, num, f);
-            if (num < 1)
-                return false;
-            if (!senddata(sock, buffer, num, 0))
-                return false;
-            filesize -= num;
+            /* First read file in chunks of BUF_SIZE bytes */
+            unsigned char buff[BUF_SIZE]={0};
+            int nread = fread(buff,1,BUF_SIZE,fp);
+            printf("Bytes read %d \n", nread);
+
+            /* If read was success, send data. */
+            if(nread > 0)
+            {
+               // printf("Sending \n");
+                write(sock, buff, nread);
+            }
+
+            /*
+             * There is something tricky going on with read ..
+             * Either there was error, or we reached end of file.
+             */
+            if (nread < BUF_SIZE)
+            {
+                if (feof(fp))
+                    printf("End of file\n");
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+            }
         }
-        while (filesize > 0);
-    }
-    return true;
 }
