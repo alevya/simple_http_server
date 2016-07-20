@@ -167,10 +167,10 @@ void process_slave_socket(int slave_socket)
     if (access(full_path.c_str(), F_OK) != -1)
     {
         // file exists, get its size
-        //int fd = open(full_path.c_str(), O_RDONLY);
-        if(!path.empty())
+        int fd = open(full_path.c_str(), O_RDONLY);
+        if(fd != -1)
         {
-             int fd = open(full_path.c_str(), O_RDONLY);
+             //int fd = open(full_path.c_str(), O_RDONLY);
             int sz = lseek(fd, 0, SEEK_END);;
 
             sprintf(reply, "HTTP/1.1 200 OK\r\n"
