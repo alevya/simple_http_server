@@ -29,6 +29,9 @@ ssize_t sock_fd_read(int sock, void *buf, ssize_t bufsize, int *fd);
 // set nonblock mode for a descriptor
 int set_nonblock(int fd);
 
+//send file via socket
+bool send_file(SOCKET sock, FILE *f);
+
 // Workers storage: socket and status (is it free (true) or not (false))
 std::map<int, bool> workers;
 
@@ -171,21 +174,28 @@ void process_slave_socket(int slave_socket)
                        "Content-length: %d\r\n"
                        "Connection: close\r\n"
                        "\r\n", sz);
-
+        close(fd);
         ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
 
 #   ifdef HTTP_DEBUG
         std::cout << "do_work: send return " << send_ret << std::endl;
 #   endif
 
+    /*
         off_t offset = 0;
         while (offset < sz)
         {
             // think not the best solution
             offset = sendfile(slave_socket, fd, &offset, sz - offset);
         }
-
-        close(fd);
+    */
+        FILE *filehandle = fopen(full_path.c_str(), "rb");
+        if (filehandle != NULL)
+        {
+            sendfile(slave_socket, filehandle);
+            fclose(filehandle);
+        }
+        //close(fd);
     }
     else
     {
@@ -595,4 +605,31 @@ int set_nonblock(int fd)
     flags = 1;
     return ioctl(fd, FIONBIO, &flags);
 #endif
+}
+
+bool send_file(SOCKET sock, FILE *f)
+{
+    fseek(f, 0, SEEK_END);
+    long filesize = ftell(f);
+    rewind(f);
+    if (filesize == EOF)
+        return false;
+    if (!sendlong(sock, filesize))
+        return false;
+    if (filesize > 0)
+    {
+        char buffer[1024];
+        do
+        {
+            size_t num = min(filesize, sizeof(buffer));
+            num = fread(buffer, 1, num, f);
+            if (num < 1)
+                return false;
+            if (!senddata(sock, buffer, num, 0))
+                return false;
+            filesize -= num;
+        }
+        while (filesize > 0);
+    }
+    return true;
 }
