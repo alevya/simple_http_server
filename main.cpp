@@ -168,7 +168,7 @@ void process_slave_socket(int slave_socket)
     {
         // file exists, get its size
         //int fd = open(full_path.c_str(), O_RDONLY);
-        if(path != '')
+        if(!path.empty())
         {
              int fd = open(full_path.c_str(), O_RDONLY);
             int sz = lseek(fd, 0, SEEK_END);;
@@ -203,7 +203,7 @@ void process_slave_socket(int slave_socket)
             offset = sendfile(slave_socket, fd, &offset, sz - offset);
         }
     */
-        if(path != '')
+        if(!path.empty())
         {
             FILE *filehandle = fopen(full_path.c_str(), "rb");
             if (filehandle != NULL)
