@@ -167,9 +167,10 @@ void process_slave_socket(int slave_socket)
     if (access(full_path.c_str(), F_OK) != -1)
     {
         // file exists, get its size
-        int fd = open(full_path.c_str(), O_RDONLY);
-        if(fd != -1)
+        //int fd = open(full_path.c_str(), O_RDONLY);
+        if(path != '')
         {
+             int fd = open(full_path.c_str(), O_RDONLY);
             int sz = lseek(fd, 0, SEEK_END);;
 
             sprintf(reply, "HTTP/1.1 200 OK\r\n"
@@ -177,7 +178,7 @@ void process_slave_socket(int slave_socket)
                             "Content-length: %d\r\n"
                             "Connection: close\r\n"
                             "\r\n", sz);
-            close(fd);
+           close(fd);
         }
         else
         {
@@ -187,6 +188,7 @@ void process_slave_socket(int slave_socket)
                             "Connection: close\r\n"
                             "\r\n");
         }
+         
         ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
 
 #   ifdef HTTP_DEBUG
@@ -201,11 +203,14 @@ void process_slave_socket(int slave_socket)
             offset = sendfile(slave_socket, fd, &offset, sz - offset);
         }
     */
-        FILE *filehandle = fopen(full_path.c_str(), "rb");
-        if (filehandle != NULL)
+        if(path != '')
         {
-            send_file(slave_socket, filehandle);
-            fclose(filehandle);
+            FILE *filehandle = fopen(full_path.c_str(), "rb");
+            if (filehandle != NULL)
+            {
+                send_file(slave_socket, filehandle);
+                fclose(filehandle);
+            }
         }
         //close(fd);
     }
