@@ -18,7 +18,7 @@
 #include <ev.h>
 
 // Debug mode, a lot of debug print to std::cout
-#define HTTP_DEBUG
+//#define HTTP_DEBUG
 #define BUF_SIZE 256
 
 // send fd
@@ -43,7 +43,7 @@ std::list<int> ready_read_sockets;
 sem_t* locker;
 
 // Arguments
-char *host = "127.0.0.1", *port = "1234", *dir = "/home/alevya/";
+char *host = 0, *port = 0, *dir = 0;
 
 int safe_pop_front()
 {
