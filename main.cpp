@@ -314,7 +314,7 @@ pid_t create_worker()
     int sp[2];
     if (socketpair(AF_LOCAL, SOCK_STREAM, 0, sp) == -1)
     {
-        printf("socketpair error, %s\n", strerror(errno));
+        //printf("socketpair error, %s\n", strerror(errno));
         exit(1);
     }
 
@@ -374,7 +374,7 @@ void master_accept_connection(struct ev_loop *loop, struct ev_io *w, int revents
     int slave_socket = accept(w->fd, 0, 0);
     if (slave_socket == -1)
     {
-        printf("accept error, %s\n", strerror(errno));
+       // printf("accept error, %s\n", strerror(errno));
         exit(3);
     }
 
@@ -424,14 +424,14 @@ int main(int argc, char* argv[])
                 dir = optarg;
                 break;
             default:
-                printf("Usage: %s -h <host> -p <port> -d <folder>\n", argv[0]);
+                //printf("Usage: %s -h <host> -p <port> -d <folder>\n", argv[0]);
                 exit(1);
         }
     }
 
     if (host == 0 || port == 0 || dir == 0)
     {
-        printf("Usage: %s -h <host> -p <port> -d <folder>\n", argv[0]);
+        //printf("Usage: %s -h <host> -p <port> -d <folder>\n", argv[0]);
         exit(1);
     }
 
@@ -447,7 +447,7 @@ int main(int argc, char* argv[])
     if (create_worker() == 0)
     {
         // worker 1 process
-        printf("Worker 1 is about to return\n");
+        //printf("Worker 1 is about to return\n");
         return 0;
     }
 
@@ -455,14 +455,14 @@ int main(int argc, char* argv[])
     if (create_worker() == 0)
     {
         // worker 2 process
-        printf("Worker 2 is about to return\n");
+        //printf("Worker 2 is about to return\n");
         return 0;
     }
 
     if (create_worker() == 0)
     {
         // worker 3 process
-        printf("Worker 3 is about to return\n");
+        //printf("Worker 3 is about to return\n");
         return 0;
     }
 
@@ -473,7 +473,7 @@ int main(int argc, char* argv[])
     int master_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (master_socket == -1)
     {
-        printf("socket error, %s\n", strerror(errno));
+        //printf("socket error, %s\n", strerror(errno));
         exit(1);
     }
     set_nonblock(master_socket);
@@ -484,13 +484,13 @@ int main(int argc, char* argv[])
 
     if (inet_pton(AF_INET, host, &(addr.sin_addr.s_addr)) != 1)
     {
-        printf("inet_aton error\n");
+        //printf("inet_aton error\n");
         exit(2);
     }
 
     if (bind(master_socket, (struct sockaddr* )&addr, sizeof(addr)) == -1)
     {
-        printf("bind return -1, %s\n", strerror(errno));
+        //printf("bind return -1, %s\n", strerror(errno));
         exit(3);
     }
 
@@ -595,13 +595,13 @@ sock_fd_read(int sock, void *buf, ssize_t bufsize, int *fd)
         cmsg = CMSG_FIRSTHDR(&msg);
         if (cmsg && cmsg->cmsg_len == CMSG_LEN(sizeof(int))) {
             if (cmsg->cmsg_level != SOL_SOCKET) {
-                fprintf (stderr, "invalid cmsg_level %d\n",
-                     cmsg->cmsg_level);
+                //fprintf (stderr, "invalid cmsg_level %d\n",
+                //     cmsg->cmsg_level);
                 exit(1);
             }
             if (cmsg->cmsg_type != SCM_RIGHTS) {
-                fprintf (stderr, "invalid cmsg_type %d\n",
-                     cmsg->cmsg_type);
+                //fprintf (stderr, "invalid cmsg_type %d\n",
+                //     cmsg->cmsg_type);
                 exit(1);
             }
 
@@ -641,7 +641,7 @@ void send_file(int sock, FILE *fp)
             /* First read file in chunks of BUF_SIZE bytes */
             unsigned char buff[BUF_SIZE]={0};
             int nread = fread(buff,1,BUF_SIZE,fp);
-            printf("Bytes read %d \n", nread);
+            //printf("Bytes read %d \n", nread);
 
             /* If read was success, send data. */
             if(nread > 0)
@@ -656,10 +656,12 @@ void send_file(int sock, FILE *fp)
              */
             if (nread < BUF_SIZE)
             {
+                /*
                 if (feof(fp))
                     printf("End of file\n");
                 if (ferror(fp))
                     printf("Error reading\n");
+                */
                 break;
             }
         }
