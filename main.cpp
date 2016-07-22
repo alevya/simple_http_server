@@ -207,7 +207,9 @@ void process_slave_socket(int slave_socket)
                       "Content-length: 107\r\n"
                       "Connection: close\r\n"
                       "\r\n");
-            ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_EOR);
+             strcpy(reply, "<html>\n<head>\n<title>Not Found</title>\n</head>\r\n");
+             strcpy(reply, "<body>\n<p>404 Request file not found.</p>\n</body>\n</html>\r\n");
+            ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
         }
          
         //ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
