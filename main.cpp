@@ -43,7 +43,7 @@ std::list<int> ready_read_sockets;
 sem_t* locker;
 
 // Arguments
-char *host = "127.0.0.1", *port = "12345", *dir = "/home/alevya";
+char *host = 0, *port = 0, *dir = 0;
 
 int safe_pop_front()
 {
@@ -412,11 +412,11 @@ void master_accept_connection(struct ev_loop *loop, struct ev_io *w, int revents
 int main(int argc, char* argv[])
 {
     // we want to be a daemon
-//    if (daemon(0, 0) == -1)
-//    {
-//        std::cout << "daemon error" << std::endl;
-//        exit(1);
-//    }
+  if (daemon(0, 0) == -1)
+    {
+       std::cout << "daemon error" << std::endl;
+        exit(1);
+    }
 
     // Allocate semaphore and initialize it as shared
     locker = new sem_t;
